@@ -1,0 +1,272 @@
+// ==UserScript==
+// @name         Dh Mobile Toolkit
+// @namespace    http://tampermonkey.net/
+// @version      0.2
+// @description  Mobile Tools developed for DiamondHunt Mobile
+// @author       zspitfire04
+// @match        https://diamondhunt.app/
+// @resource    bootstrapBundle https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js
+// @resource    bootstrapCSS https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css
+// @resource    iconic https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css
+// @grant       GM_addStyle
+// @grant       GM_getResourceText
+// ==/UserScript==
+
+// variables
+var cOil,cStone,cCopper,cIron,cSilver,cGold;
+
+var refreshRate = setInterval(updateStats, 1000);
+
+function flashBar(skillName){
+    var barToFlash = skillName + 'bar'
+
+    console.log('Your ' + skillName + ' is full!');
+};
+
+function updateStats() {
+    cOil = oil ;
+    cStone = stone;
+    cCopper = copper;
+    cIron = iron;
+    cSilver = silver;
+    cGold = gold;
+
+    if (cOil === oilCapacity || cStone === stoneCapacity || cCopper === copperCapacity || cIron === ironCapacity || cSilver === silverCapacity || cGold === goldCapacity ){
+       $('#miningbar').addClass('flash-name');
+    } else {$('#miningbar').removeClass('flash-name');}
+    if( farmTimer1 === 1 || farmTimer2 === 1){
+        $('#farmingbar').addClass('flash-name'); }
+    else{$('#farmingbar').removeClass('flash-name');};
+};
+
+
+
+var skillArr = ['mining','brewing','cooking','crafting','exploring','farming','woodcutting'];
+
+var fillSkills = function(skill){
+   var navigationMethod = "\"navigate('"+skill+"');playFowardMenuSound()\"";
+return "<div id='" + skill+"bar' class='row skillButton'  data-toggle='tooltip' data-placement='bottom' title='Tooltip on left'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar' onclick="+navigationMethod+">"
++         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/"+skill+"Skill.png'>"
++            "<span class='skillTitle'>"+skill.toUpperCase();+" </span></a>"
++     "</span>"
++  "</div></div>";
+}
+
+var statisticBar =
+    "<div id='statbar' class='row skillButton'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar'>"
++         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/globalLevel.png'>"
++            "<span class='skillTitle'> STATISTICS </span></a>"
++     "</span>"
++  "</div></div>";
+
+
+
+
+// Styles
+
+var smittysFix = [
+".smittys-dialogues{",
+    "width: 400px;",
+    "position: sticky;",
+    "top: 15%;",
+    "left: 30%;",
+    "background-color: #2e2f32eb;",
+    "border: 1px solid black;",
+    "padding: 1rem;",
+    "border-radius: 3%;",
+    "box-shadow: 0px 0px 20px 0px #000000;",
+  "}",
+    ".smittys-dialogues-x-child {",
+        "float: right;",
+        "position: relative;",
+        "font-size: x-large;",
+        "color: white;",
+        "border: 1px solid #727272;",
+        "background: #1a1a1a;",
+        "width: 1.8rem;",
+        "top: -55px;",
+        "border-radius: 15%;",
+    "}",
+    ".smittys-dialogues-title{",
+        "font-size: xx-large;",
+        "color: orange;",
+    "}",
+     ".smittys-dialogues-x {",
+        "text-align: center;",
+        "border-bottom: 1px solid orange;",
+    "}",
+    "#dialogue-confirm-text {",
+        "text-align: center;",
+    "}",
+    "#dialogue-confirm-yes, #dialogue-confirm-no {",
+        "background-color: rgb(26, 26, 26);",
+        "cursor: pointer;",
+        "color: white;",
+        "border: 1px solid grey;",
+    "}"
+].join('\n') + '\n';
+
+var frameCSS = [
+    "body {",
+        "background-image: url(../images/backgrounds/background2.jpg);",
+    "}",
+    ".sidenav {",
+        "display: flow-root;",
+        "padding: 0.25rem;",
+        "border: 1px solid rgb(0,0,0);",
+        "max-width: 25%;",
+        "max-height: 97%;",
+        "height: 95%;",
+        "width: 25%;",
+        "float: left;",
+        "z-index: 10;",
+        "overflow: auto;",
+        "bottom: 3%;",
+        "top: 0;",
+        "left: 0;",
+        "overflow-x: hidden;",
+        "background-color: #1111114a;",
+        "position: fixed;",
+        "border-bottom-right-radius: 1rem;",
+        "transition: 0.5s;",
+    "}",
+   ".sidenav .closebtn open {",
+      "position: absolute;",
+       "top: 0;",
+       "right: 25px;",
+       "font-size: 36px;",
+       "margin-left: 50px;",
+    "}",
+    ".body-tag-child{",
+        "background-image: none;",
+        "background-color: #1111114a;",
+        "transition: margin-left .5s;",
+    "}",
+    ".menu-expand-button {",
+        "float:right;",
+        "margin-top: -9%;",
+        "margin-right: 2%;",
+    "}",
+    ".dh-btn {",
+        "background-color: #1a1a1a;",
+        "color: orange;",
+        "border-color: #808080;",
+    "}",
+    "#titlebar {",
+        "height: 2rem;",
+        "margin: 2% auto;",
+        "margin-bottom: 2.5rem;",
+        "color:orange;",
+    "}",
+    "#nav-icon-container {",
+        "padding: 0;",
+    "}",
+    ".skillBar {",
+        "width: 100%;",
+    "}",
+    ".skillBar:hover {",
+       "border: 1px solid white;",
+       "color: white;",
+       "box-shadow: 1px 1px 11px 3px rgba(0, 0, 0, 0.4);",
+    "}",
+    ".skillIcon {",
+        "float:left;",
+        "width: 2.5rem;",
+        "border-right: 2px solid gold;",
+        "padding-left: 0;",
+        "padding-right: 5%;",
+
+    "}",
+    ".skillTitle {",
+        'font-family: "Lucida Grande","bitstream vera sans","trebuchet ms","sans-serif","verdana";',
+        "color: gold;",
+        "font-size: 1.2rem;",
+    "}",
+    ".skillButton{",
+        "height: 3rem;",
+        "margin-bottom: 2%;",
+    "}",
+    ".skillShrunk{",
+        "width: 1.75rem;",
+        "margin-left: -100%;",
+        "border: none;",
+    "}",
+    ".flash-name {",
+        "text-shadow: -1px 1px 20px white;",
+    "}",
+    ".tooltip.bs-tooltip-bottom .tooltip-inner {",
+         "background:#444 !important;",
+    "}"
+   ].join('\n') + '\n';
+
+
+// Inject Scripts and Styles
+    $("head").append("<style>" + GM_getResourceText("bootstrapCSS") + "</style>");
+    $("head").append("<style>" + GM_getResourceText("iconic") + "</style>");
+    $("head").append("<style>" + smittysFix + "</style>");
+    $("head").append("<style>" + frameCSS + "</style>");
+    $("head").append("<script>" + GM_getResourceText("bootstrapBundle") + "</script>");
+
+// Enable Tooltips
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+/// Initialize Display
+    $("body").prepend(
+      "<div id='mainSideNav' class='sidenav container'>"
+    + "<div id = 'titlebar' class='row'>"
+    + "<span id='main-title' class='col-sm-10'><h5> DH Mobile Toolkit </h5></span>"
+    + "<div id='nav-icon-container' class='col-sm-2'><a href='javascript:void(0)' class='closebtn'><span class='btn dh-btn'>"
+    + "<img id='nav-icon' src='https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/png/arrow-thick-left-2x.png'>" +
+        "</span></a>"
+    + "</div>"
+     );
+$('#mainSideNav').css( "width", "25%" );
+$('#body-tag-child').css("margin-left", "35%");
+
+
+///// INSERT SKILLS
+jQuery.each( skillArr, function( i, val ) {
+  $('#mainSideNav').append(fillSkills(val));
+});
+////// INSERT STATISTICS
+ $('#mainSideNav').append(statisticBar);
+
+
+
+
+
+
+var checkForUpdates = function (){}
+///////////////// SIDEBAR FUNCTIONS /////////////////
+$( "#nav-icon-container" ).click(function( event ) {
+  var target = $('#nav-icon');
+  var curSrc = target.attr('src');
+  if ( curSrc === 'https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/png/arrow-thick-left-2x.png' ) {
+      $(target).attr('src', 'https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/png/arrow-thick-right-2x.png');
+      $('#mainSideNav').css( "width", "5%" );
+      $('#body-tag-child').css("margin-left", "15%");
+      $('#main-title').css("display","none");
+      $('.skillTitle').css("display","none");
+      $('.skillIcon').addClass('skillShrunk');
+  }
+  if ( curSrc === 'https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/png/arrow-thick-right-2x.png' ) {
+      $(target).attr('src', 'https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/png/arrow-thick-left-2x.png');
+      $('#mainSideNav').css( "width", "25%" );
+      $('#body-tag-child').css("margin-left", "35%");
+      $('#main-title').css("display","block");
+      $('.skillTitle').css("display","inline");
+      $('.skillIcon').removeClass('skillShrunk');
+  }
+});
+////////////////////////////////////////////////////////
+$('#miningbar').attr('title','something else');
+
+checkForUpdates();
+
+// Sidenav movements
+
