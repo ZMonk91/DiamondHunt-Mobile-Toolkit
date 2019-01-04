@@ -3,7 +3,7 @@
 // @namespace    https://github.com/ZMonk91/DiamondHunt-Mobile-Toolkit
 // @version      0.2
 // @description  Mobile Tools developed for DiamondHunt Mobile
-// @author       zspitfire04
+// @author       zspitfire04 && Agrodon
 // @match        https://diamondhunt.app/
 // @resource    bootstrapBundle https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js
 // @resource    bootstrapCSS https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css
@@ -16,12 +16,6 @@
 var cOil,cStone,cCopper,cIron,cSilver,cGold;
 
 var refreshRate = setInterval(updateStats, 1000);
-
-function flashBar(skillName){
-    var barToFlash = skillName + 'bar'
-
-    console.log('Your ' + skillName + ' is full!');
-};
 
 function updateStats() {
     cOil = oil ;
@@ -37,17 +31,25 @@ function updateStats() {
     if( farmTimer1 === 1 || farmTimer2 === 1){
         $('#farmingbar').addClass('flash-name'); }
     else{$('#farmingbar').removeClass('flash-name');};
+
+
+    $('#counter-coin').text(coins);
+    $('#counter-bc').text(bloodCrystals);
+    $('#counter-energy').text(energy);
 };
 
 
+var navigationMethod = function(skillName){
+    return "\"navigate('"+skillName+"');playFowardMenuSound()\"";
+}
 
-var skillArr = ['mining','brewing','cooking','crafting','exploring','farming','woodcutting'];
+var skillArr = ['mining','crafting','woodcutting','farming','brewing','exploring','cooking'];
 
 var fillSkills = function(skill){
-   var navigationMethod = "\"navigate('"+skill+"');playFowardMenuSound()\"";
+  var navLoc = navigationMethod(skill);  //var navigationMethod = "\"navigate('"+skill+"');playFowardMenuSound()\"";
 return "<div id='" + skill+"bar' class='row skillButton'  data-toggle='tooltip' data-placement='bottom' title='Tooltip on left'>"
 + "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+navigationMethod+">"
++     "<span class='btn dh-btn skillBar' onclick="+navLoc+">"
 +         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/"+skill+"Skill.png'>"
 +            "<span class='skillTitle'>"+skill.toUpperCase();+" </span></a>"
 +     "</span>"
@@ -62,6 +64,37 @@ var statisticBar =
 +            "<span class='skillTitle'> STATISTICS </span></a>"
 +     "</span>"
 +  "</div></div>";
+
+var researchLoc = navigationMethod('researcher');
+var researchBar =
+    "<div id='researchbar' class='row skillButton'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar' onclick="+researchLoc+">"
++         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/atom.png'>"
++            "<span class='skillTitle'> RESEARCH </span></a>"
++     "</span>"
++  "</div></div>";
+
+var missionsLoc = navigationMethod('missions');
+var missionBar =
+    "<div id='missionsbar' class='row skillButton'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar' onclick="+missionsLoc+">"
++         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/missions.png'>"
++            "<span class='skillTitle'> MISSIONS </span></a>"
++     "</span>"
++  "</div></div>";
+
+var questLoc = navigationMethod('quests');
+var questBar =
+    "<div id='questsbar' class='row skillButton'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar' onclick="+questLoc+">"
++         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/quests.png'>"
++            "<span class='skillTitle'> MISSIONS </span></a>"
++     "</span>"
++  "</div></div>";
+
 
 
 
@@ -107,6 +140,15 @@ var smittysFix = [
         "cursor: pointer;",
         "color: white;",
         "border: 1px solid grey;",
+    "}",
+    "div.basic-smallbox-light {",
+        "border: none;",
+        "background: none;",
+    "}",
+    "div.basic-smallbox-lighter{",
+        "border: none;",
+        "background: none;",
+        "color: white;",
     "}"
 ].join('\n') + '\n';
 
@@ -185,6 +227,8 @@ var frameCSS = [
         'font-family: "Lucida Grande","bitstream vera sans","trebuchet ms","sans-serif","verdana";',
         "color: gold;",
         "font-size: 1.2rem;",
+        "float: left;",
+        "padding-left: 1rem;",
     "}",
     ".skillButton{",
         "height: 3rem;",
@@ -200,7 +244,28 @@ var frameCSS = [
     "}",
     ".tooltip.bs-tooltip-bottom .tooltip-inner {",
          "background:#444 !important;",
+    "}",
+    "div.skill-xp-bar {",
+        "height: 22px !important;",
+        "box-shadow: inset 0 4px 20px 0px #1111119e;",
+        "border-radius: 0.3rem;",
+    "}",
+    "div.inner-skill-xp-bar {",
+        "border-bottom-right-radius: 5%;",
+        "border-top-right-radius: 5%;",
+        "box-shadow: inset 0px 0px 4px 0px #1a1a1aba;",
+        "background: limegreen;",
+     "}",
+    ".counterIcon {",
+        "max-width: 1rem;",
+        "margin-right: 4%",
+    "}",
+    ".counter-badge {",
+        "margin: 0 1% .5rem 6%;",
+        "width: 100%;",
+        "min-width: 35%;",
     "}"
+
    ].join('\n') + '\n';
 
 
@@ -229,19 +294,29 @@ $('#mainSideNav').css( "width", "25%" );
 $('#body-tag-child').css("margin-left", "35%");
 
 
+var counters = "<div id='counterbar' class='row'>" +
+    "<span class='badge badge-dark counter-badge col-sm-2'>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/coins.png'><span id= 'counter-coin'>1</span></span>" +
+    "<span class='badge badge-dark counter-badge col-sm-2'>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/bloodCrystals.png'><span id= 'counter-bc'>231</span></span>" +
+    "<span class='badge badge-dark counter-badge col-sm-2'>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/energy.png'><span id= 'counter-energy'>124141</span></span>" +
+    "<span class='badge badge-dark counter-badge col-sm-2'>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/coins.png'><span id= 'counter-other'>35</span></span>" +
+"</div>"
+
+///// INSERT COUNTERS
+ $('#mainSideNav').append(counters);
 ///// INSERT SKILLS
 jQuery.each( skillArr, function( i, val ) {
   $('#mainSideNav').append(fillSkills(val));
 });
-////// INSERT STATISTICS
+////// INSERT ADDITIONAL INFO
  $('#mainSideNav').append(statisticBar);
+$('#mainSideNav').append(researchBar);
+$('#mainSideNav').append(missionBar);
+$('#mainSideNav').append(questBar);
 
-
-
-
-
-
-var checkForUpdates = function (){}
 ///////////////// SIDEBAR FUNCTIONS /////////////////
 $( "#nav-icon-container" ).click(function( event ) {
   var target = $('#nav-icon');
@@ -265,8 +340,4 @@ $( "#nav-icon-container" ).click(function( event ) {
 });
 ////////////////////////////////////////////////////////
 $('#miningbar').attr('title','something else');
-
-checkForUpdates();
-
-// Sidenav movements
 
