@@ -23,6 +23,7 @@
 
 ## Future Features
 * Display Remaining XP
+* Dynamic Tooltip Information
 * Make everything responsive
 * Statistics Screen
 * Calculators
@@ -34,8 +35,7 @@
 * Wiki
 
 ## Known Bugs
-* Vertical Scrollbar Glitces when barely visible, also turns on and off every second
-* Sizes are wrong for items inside Dialogue box
+* Vertical Scrollbar glitches when barely visible, also turns on and off every second
 * On minimization, items don't align
 * Fourth counter is useless for now
 
