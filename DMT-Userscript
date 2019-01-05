@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Dh Mobile Toolkit
 // @namespace    https://github.com/ZMonk91/DiamondHunt-Mobile-Toolkit
-// @version      0.2
+// @version      0.25
 // @description  Mobile Tools developed for DiamondHunt Mobile
 // @author       zspitfire04 && Agrodon
 // @match        https://diamondhunt.app/
 // @resource    bootstrapBundle https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js
 // @resource    bootstrapCSS https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css
 // @resource    iconic https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css
+// @resource    scrollbarOverlayJS https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.6.1/js/jquery.overlayScrollbars.js
+// @resource    scrollbarOverlayCSS https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.6.1/css/OverlayScrollbars.min.css
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // ==/UserScript==
@@ -25,18 +27,49 @@ function updateStats() {
     cSilver = silver;
     cGold = gold;
 
+    // Notify if Mining Items are @ Capacity
     if (cOil === oilCapacity || cStone === stoneCapacity || cCopper === copperCapacity || cIron === ironCapacity || cSilver === silverCapacity || cGold === goldCapacity ){
        $('#miningbar').addClass('flash-name');
     } else {$('#miningbar').removeClass('flash-name');}
-    if( farmTimer1 === 1 || farmTimer2 === 1){
+
+    // Notify if Farm timer is done or not set
+    if( farmTimer1 === 1 || farmTimer2 === 1 || farm1 === "none" || farm2 === "none"){
         $('#farmingbar').addClass('flash-name'); }
     else{$('#farmingbar').removeClass('flash-name');};
 
+    // Notify if Tree is ready
+   if( treeTimer1 === 1 || treeTimer2 === 1 || treeTimer3 === 1 === "none" || treeTimer4 === 1 || treeTimer5 === 1 ||
+     treeTimer6 === 1 || treeTimer7 === 1 || treeTimer8 === 1 || treeTimer9 === 1){
+        $('#woodcuttingbar').addClass('flash-name'); }
+    else{$('#woodcuttingbar').removeClass('flash-name');};
+
+    // Notify if Research Available
+    if(coins >= brewingResearchLevelNextPrice ||
+          coins >= brewingResearchLevelNextPrice ||
+          coins >= cookingResearchLevelNextPrice ||
+          coins >= craftingResearchLevelNextPrice ||
+          coins >= exploringResearchLevelNextPrice ||
+          coins >= farmingResearchLevelNextPrice ||
+          coins >= miningResearchLevelNextPrice ||
+          coins >= woodcuttingResearchLevelNextPrice){
+       $('#researchbar').addClass('flash-name'); }
+    else{$('#researchbar').removeClass('flash-name');};
+
+    // TODO: Created Mission Complete, Click For Reward notification
+
+    // Notify if Smelting is done
+    if( smeltingCurrentOreTo === 0){
+        $('#craftingbar').addClass('flash-name'); }
+    else{$('#craftingbar').removeClass('flash-name');};
 
     $('#counter-coin').text(coins);
     $('#counter-bc').text(bloodCrystals);
     $('#counter-energy').text(energy);
 };
+
+// Fix missing House
+if($('#home-button-img').attr('src') === "images/empty100_100.png"){
+   $('#home-button-img').attr('src','images/home1.png')};
 
 
 var navigationMethod = function(skillName){
@@ -50,7 +83,7 @@ var fillSkills = function(skill){
 return "<div id='" + skill+"bar' class='row skillButton'  data-toggle='tooltip' data-placement='bottom' title='Tooltip on left'>"
 + "<div class='col-sm-12'>"
 +     "<span class='btn dh-btn skillBar' onclick="+navLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/"+skill+"Skill.png'>"
++         "<a href='#' ><img class='skillIcon' src='images/"+skill+"Skill.png'>"
 +            "<span class='skillTitle'>"+skill.toUpperCase();+" </span></a>"
 +     "</span>"
 +  "</div></div>";
@@ -60,7 +93,7 @@ var statisticBar =
     "<div id='statbar' class='row skillButton'>"
 + "<div class='col-sm-12'>"
 +     "<span class='btn dh-btn skillBar'>"
-+         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/globalLevel.png'>"
++         "<a href='#' ><img class='skillIcon' src='images/globalLevel.png'>"
 +            "<span class='skillTitle'> STATISTICS </span></a>"
 +     "</span>"
 +  "</div></div>";
@@ -70,7 +103,7 @@ var researchBar =
     "<div id='researchbar' class='row skillButton'>"
 + "<div class='col-sm-12'>"
 +     "<span class='btn dh-btn skillBar' onclick="+researchLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/atom.png'>"
++         "<a href='#' ><img class='skillIcon' src='images/atom.png'>"
 +            "<span class='skillTitle'> RESEARCH </span></a>"
 +     "</span>"
 +  "</div></div>";
@@ -80,7 +113,7 @@ var missionBar =
     "<div id='missionsbar' class='row skillButton'>"
 + "<div class='col-sm-12'>"
 +     "<span class='btn dh-btn skillBar' onclick="+missionsLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/missions.png'>"
++         "<a href='#' ><img class='skillIcon' src='images/missions.png'>"
 +            "<span class='skillTitle'> MISSIONS </span></a>"
 +     "</span>"
 +  "</div></div>";
@@ -90,13 +123,32 @@ var questBar =
     "<div id='questsbar' class='row skillButton'>"
 + "<div class='col-sm-12'>"
 +     "<span class='btn dh-btn skillBar' onclick="+questLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='https://diamondhunt.app/images/quests.png'>"
-+            "<span class='skillTitle'> MISSIONS </span></a>"
++         "<a href='#' ><img class='skillIcon' src='images/quests.png'>"
++            "<span class='skillTitle'> QUESTS </span></a>"
 +     "</span>"
 +  "</div></div>";
 
+var shopLoc = navigationMethod('shop');
+var currentShopIcon = $('#shop-button-img').attr('src')
+var shopBar =
+    "<div id='shopbar' class='row skillButton'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar' onclick="+shopLoc+">"
++         "<a href='#' ><img class='skillIcon' src='"+currentShopIcon+"'>"
++            "<span class='skillTitle'> SHOP </span></a>"
++     "</span>"
++  "</div></div>";
 
-
+var homeLoc = navigationMethod('home');
+var currentHomeIcon = $('#home-button-img').attr('src')
+var homeBar =
+    "<div id='homebar' class='row skillButton'>"
++ "<div class='col-sm-12'>"
++     "<span class='btn dh-btn skillBar' onclick="+homeLoc+">"
++         "<a href='#' ><img class='skillIcon' src='"+currentHomeIcon+"'>"
++            "<span class='skillTitle'> House </span></a>"
++     "</span>"
++  "</div></div>";
 
 
 // Styles
@@ -104,7 +156,7 @@ var questBar =
 var smittysFix = [
 ".smittys-dialogues{",
     "width: 400px;",
-    "position: sticky;",
+    "position: fixed;",
     "top: 15%;",
     "left: 30%;",
     "background-color: #2e2f32eb;",
@@ -149,6 +201,14 @@ var smittysFix = [
         "border: none;",
         "background: none;",
         "color: white;",
+    "}",
+    ".img-small-medium {",
+        "max-width: 2rem !important;",
+        "height: unset !important;",
+    "}",
+    "loot-span {",
+        "background-color: #ffffff26 !important;",
+        "border: 1px solid #525252 !important;",
     "}"
 ].join('\n') + '\n';
 
@@ -264,6 +324,11 @@ var frameCSS = [
         "margin: 0 1% .5rem 6%;",
         "width: 100%;",
         "min-width: 35%;",
+    "}",
+    ".os-theme-dark > .os-scrollbar > .os-scrollbar-track > .os-scrollbar-handle {",
+        "background: #ffd700;",
+        "position: fixed;",
+        "left: -99.75%;",
     "}"
 
    ].join('\n') + '\n';
@@ -272,9 +337,12 @@ var frameCSS = [
 // Inject Scripts and Styles
     $("head").append("<style>" + GM_getResourceText("bootstrapCSS") + "</style>");
     $("head").append("<style>" + GM_getResourceText("iconic") + "</style>");
+    $("head").append("<style>" + GM_getResourceText("scrollbarOverlayCSS") + "</style>");
     $("head").append("<style>" + smittysFix + "</style>");
     $("head").append("<style>" + frameCSS + "</style>");
     $("head").append("<script>" + GM_getResourceText("bootstrapBundle") + "</script>");
+    $("head").append("<script>" + GM_getResourceText("scrollbarOverlayJS") + "</script>");
+
 
 // Enable Tooltips
 $(function () {
@@ -312,10 +380,13 @@ jQuery.each( skillArr, function( i, val ) {
   $('#mainSideNav').append(fillSkills(val));
 });
 ////// INSERT ADDITIONAL INFO
- $('#mainSideNav').append(statisticBar);
+$('#mainSideNav').append(statisticBar);
 $('#mainSideNav').append(researchBar);
 $('#mainSideNav').append(missionBar);
 $('#mainSideNav').append(questBar);
+$('#mainSideNav').append(homeBar);
+$('#mainSideNav').append(shopBar);
+
 
 ///////////////// SIDEBAR FUNCTIONS /////////////////
 $( "#nav-icon-container" ).click(function( event ) {
@@ -338,6 +409,17 @@ $( "#nav-icon-container" ).click(function( event ) {
       $('.skillIcon').removeClass('skillShrunk');
   }
 });
-////////////////////////////////////////////////////////
+
+//Tooltip//////////////////////////////////////////////////////
 $('#miningbar').attr('title','something else');
 
+// Initialize Scrollbar
+//$('#body-tag').overlayScrollbars({ className: "os-theme-dark"});
+$('div#mainSideNav').overlayScrollbars({
+
+    overflowBehavior :
+    {
+		x : "hidden",
+        y : "scroll"
+    },
+});
