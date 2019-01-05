@@ -35,7 +35,6 @@
 * Wiki
 
 ## Known Bugs
-* Vertical Scrollbar glitches when barely visible, also turns on and off every second
 * On minimization, items don't align
 * Fourth counter is useless for now
 
