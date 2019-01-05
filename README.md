@@ -18,13 +18,13 @@
 ## Current Features
 * Improved UI including transparent backgrounds, dialogue fixes, and prettier xp bars
 * Adjustable side menu
-* Notification when you're at capacity for Mining
-* Notification when your timers have run out
+* Responsive game and menu screen
+* Notifications for Mining, Woodcutting, Crafting, Farming, and Research
+
 
 ## Future Features
 * Display Remaining XP
 * Dynamic Tooltip Information
-* Make everything responsive
 * Statistics Screen
 * Calculators
 * Customizable Counter Bar
@@ -35,7 +35,6 @@
 * Wiki
 
 ## Known Bugs
-* On minimization, items don't align
 * Fourth counter is useless for now
 
 ### Special Thanks
