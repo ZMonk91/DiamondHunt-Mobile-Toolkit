@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dh Mobile Toolkit
 // @namespace    https://github.com/ZMonk91/DiamondHunt-Mobile-Toolkit
-// @version      0.28
+// @version      0.4
 // @description  Mobile Tools developed for DiamondHunt Mobile
 // @author       zspitfire04 && Agrodon
 // @match        https://diamondhunt.app/
@@ -15,146 +15,118 @@
 // @grant       GM_getResourceText
 // ==/UserScript==
 
-// variables
-var cOil,cStone,cCopper,cIron,cSilver,cGold;
-
-var refreshRate = setInterval(updateStats, 1000);
-
-function updateStats() {
-    cOil = oil ;
-    cStone = stone;
-    cCopper = copper;
-    cIron = iron;
-    cSilver = silver;
-    cGold = gold;
-
-    // Notify if Mining Items are @ Capacity
-    if (cOil === oilCapacity || cStone === stoneCapacity || cCopper === copperCapacity || cIron === ironCapacity || cSilver === silverCapacity || cGold === goldCapacity ){
-       $('#miningbar>div>.skillBar').addClass('flash-notice');
-    } else {$('#miningbar>div>.skillBar').removeClass('flash-notice');}
-
-    // Notify if Farm timer is done or not set
-    if( farmTimer1 === 1 || farmTimer2 === 1 || farm1 === "none" || farm2 === "none"){
-        $('#farmingbar>div>.skillBar').addClass('flash-notice'); }
-    else{$('#farmingbar>div>.skillBar').removeClass('flash-notice');};
-
-    // Notify if Tree is ready
-   if( treeTimer1 === 1 || treeTimer2 === 1 || treeTimer3 === 1 === "none" || treeTimer4 === 1 || treeTimer5 === 1 ||
-     treeTimer6 === 1 || treeTimer7 === 1 || treeTimer8 === 1 || treeTimer9 === 1){
-        $('#woodcuttingbar>div>.skillBar').addClass('flash-notice'); }
-    else{$('#woodcuttingbar>div>.skillBar').removeClass('flash-notice');};
-
-    // Notify if Research Available
-    if(coins >= brewingResearchLevelNextPrice ||
+// VARIABLES
+let cOil,cStone,cCopper,cIron,cSilver,cGold;
+const refreshRate = setInterval(updateStats, 1000);
+const skillsList = [
+    {
+    name: 'mining',
+    navigation: '"navigate(\'mining\');playFowardMenuSound()"',
+    img: 'images/miningSkill.png',
+    label: 'MINING',
+    notif: () => (oil    === oilCapacity    ||
+            stone  === stoneCapacity  ||
+            copper === copperCapacity ||
+            iron   === ironCapacity   ||
+            silver === silverCapacity ||
+            gold   === goldCapacity)
+    },
+    {
+    name: 'crafting',
+    navigation: '"navigate(\'crafting\');playFowardMenuSound()"',
+    img: 'images/craftingSkill.png',
+    label: 'CRAFTING',
+    notif: () => (smeltingCurrentOreTo === 0),
+    },
+    {
+    name: 'woodcutting',
+    navigation:  '"navigate(\'woodcutting\');playFowardMenuSound()"',
+    img: 'images/woodcuttingSkill.png',
+    label: 'WOODCUTTING',
+    notif: () => (treeTimer1 === 1 || treeTimer2 === 1 || treeTimer3 === 1 || treeTimer4 === 1 || treeTimer5 === 1 ||
+     treeTimer6 === 1 || treeTimer7 === 1 || treeTimer8 === 1 || treeTimer9 === 1),
+    },
+    {
+    name: 'farming',
+    navigation: '"navigate(\'farming\');playFowardMenuSound()"',
+    img: 'images/farmingSkill.png',
+    label: 'FARMING',
+    notif: () => (farmTimer1 === 1 || farmTimer2 === 1 || farm1 === "none" || farm2 === "none"),
+    },
+    {
+    name: 'brewing',
+    navigation: '"navigate(\'brewing\');playFowardMenuSound()"',
+    img: 'images/brewingSkill.png',
+    label: 'BREWING',
+    notif:() => (false),
+    },
+    {
+    name: 'exploring',
+    navigation: '"navigate(\'exploring\');playFowardMenuSound()"',
+    img: 'images/exploringSkill.png',
+    label: 'EXPLORING',
+    notif:() => (false),
+    },
+    {
+    name: 'cooking',
+    navigation: '"navigate(\'cooking\');playFowardMenuSound()"',
+    img: 'images/cookingSkill.png',
+    label: 'COOKING',
+    notif:() => (false),
+    },
+    {
+    name: 'research',
+    navigation: '"navigate(\'researcher\');playFowardMenuSound()"',
+    img: 'images/atom.png',
+    label: 'RESEARCH',
+    notif:() => ((coins >= brewingResearchLevelNextPrice ||
           coins >= brewingResearchLevelNextPrice ||
           coins >= cookingResearchLevelNextPrice ||
           coins >= craftingResearchLevelNextPrice ||
           coins >= exploringResearchLevelNextPrice ||
           coins >= farmingResearchLevelNextPrice ||
           coins >= miningResearchLevelNextPrice ||
-          coins >= woodcuttingResearchLevelNextPrice){
-       $('#researchbar>div>.skillBar').addClass('flash-notice'); }
-    else{$('#researchbar>div>.skillBar').removeClass('flash-notice');};
-
-    // TODO: Created Mission Complete, Click For Reward notification
-
-    // Notify if Smelting is done
-    if( smeltingCurrentOreTo === 0){
-        $('#craftingbar>div>.skillBar').addClass('flash-notice'); }
-    else{$('#craftingbar>div>.skillBar').removeClass('flash-notice');};
-
-    $('#counter-coin').text(coins);
-    $('#counter-bc').text(bloodCrystals);
-    $('#counter-energy').text(energy);
-};
-
-// Fix missing House
-if($('#home-button-img').attr('src') === "images/empty100_100.png"){
-   $('#home-button-img').attr('src','images/home1.png')};
-
-
-var navigationMethod = function(skillName){
-    return "\"navigate('"+skillName+"');playFowardMenuSound()\"";
-}
-
-var skillArr = ['mining','crafting','woodcutting','farming','brewing','exploring','cooking'];
-
-var fillSkills = function(skill){
-  var navLoc = navigationMethod(skill);  //var navigationMethod = "\"navigate('"+skill+"');playFowardMenuSound()\"";
-return "<div id='" + skill+"bar' class='row skillButton'  data-toggle='tooltip' data-placement='bottom' title='Tooltip on left'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+navLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='images/"+skill+"Skill.png'>"
-+            "<span class='skillTitle'>"+skill.toUpperCase();+" </span></a>"
-+     "</span>"
-+  "</div></div>";
-}
-
-var statisticBar =
-    "<div id='statbar' class='row skillButton'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar'>"
-+         "<a href='#' ><img class='skillIcon' src='images/globalLevel.png'>"
-+            "<span class='skillTitle'> STATISTICS </span></a>"
-+     "</span>"
-+  "</div></div>";
-
-var researchLoc = navigationMethod('researcher');
-var researchBar =
-    "<div id='researchbar' class='row skillButton'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+researchLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='images/atom.png'>"
-+            "<span class='skillTitle'> RESEARCH </span></a>"
-+     "</span>"
-+  "</div></div>";
-
-var missionsLoc = navigationMethod('missions');
-var missionBar =
-    "<div id='missionsbar' class='row skillButton'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+missionsLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='images/missions.png'>"
-+            "<span class='skillTitle'> MISSIONS </span></a>"
-+     "</span>"
-+  "</div></div>";
-
-var questLoc = navigationMethod('quests');
-var questBar =
-    "<div id='questsbar' class='row skillButton'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+questLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='images/quests.png'>"
-+            "<span class='skillTitle'> QUESTS </span></a>"
-+     "</span>"
-+  "</div></div>";
-
-var shopLoc = navigationMethod('shop');
-var currentShopIcon = $('#shop-button-img').attr('src')
-var shopBar =
-    "<div id='shopbar' class='row skillButton'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+shopLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='"+currentShopIcon+"'>"
-+            "<span class='skillTitle'> SHOP </span></a>"
-+     "</span>"
-+  "</div></div>";
-
-var homeLoc = navigationMethod('home');
-var currentHomeIcon = $('#home-button-img').attr('src')
-var homeBar =
-    "<div id='homebar' class='row skillButton'>"
-+ "<div class='col-sm-12'>"
-+     "<span class='btn dh-btn skillBar' onclick="+homeLoc+">"
-+         "<a href='#' ><img class='skillIcon' src='"+currentHomeIcon+"'>"
-+            "<span class='skillTitle'> House </span></a>"
-+     "</span>"
-+  "</div></div>";
+          coins >= woodcuttingResearchLevelNextPrice)&& researcherTimer === 0),
+    },
+    {
+    name: 'missions',
+    navigation: '"navigate(\'missions\');playFowardMenuSound()"',
+    img: 'images/missions.png',
+    label: 'MISSIONS',
+    notif:() => (false),
+    },
+    {
+    name: 'quests',
+    navigation: '"navigate(\'quests\');playFowardMenuSound()"',
+    img: 'images/quests.png',
+    label: 'QUESTS',
+    notif:() => (false),
+    },
+    {
+    name: 'shop',
+    navigation: '"navigate(\'shop\');playFowardMenuSound()"',
+    img: 'images/shop.png',
+    label: 'SHOP',
+    notif:() => (false),
+    },
+    {
+    name: 'home',
+    navigation: '"navigate(\'home\');playFowardMenuSound()"',
+    img: 'images/home1.png',
+    label: 'HOUSE',
+    notif:() => (false),
+    },
+    {
+    name: 'statistics',
+    navigation: '#',
+    img: 'images/globalLevel.png',
+    label: 'STATISTICS',
+    notif:() => (false),
+    }];
 
 
 // Styles
-
-var smittysFix = [
+const smittysFix = [
 ".smittys-dialogues{",
     "width: 400px;",
     "position: fixed;",
@@ -212,8 +184,7 @@ var smittysFix = [
         "border: 1px solid #525252 !important;",
     "}"
 ].join('\n') + '\n';
-
-var frameCSS = [
+const frameCSS = [
     "body {",
         "background-image: url(../images/backgrounds/background2.jpg);",
     "}",
@@ -240,7 +211,7 @@ var frameCSS = [
         "background-color: #1a1a1a;",
         "top: 0;",
         "left: 0;",
-        "width: 100%;",
+        "width: 100% !important;",
         "padding-bottom: 5px;",
         "border-bottom-left-radius: 1rem;",
         "border-bottom-right-radius: 1rem;",
@@ -250,10 +221,11 @@ var frameCSS = [
         "display: flow-root;",
         "padding: 0.25rem;",
         "border: 1px solid rgb(0,0,0);",
-        "max-width: 25%;",
+        "max-width: 16rem;",
+        "min-width: 13rem;",
         "max-height: 97%;",
         "height: 95%;",
-        "width: 25%;",
+        "width: 15%;",
         "float: left;",
         "z-index: 10;",
         "overflow: auto;",
@@ -274,10 +246,20 @@ var frameCSS = [
        "margin-left: 50px;",
     "}",
     ".body-tag-child{",
+        "width: unset !important;",
+        "min-width: 22rem;",
+        "max-width: 35%;",
         "background-image: none;",
         "background-color: #1111114a;",
         "transition: margin-left .5s;",
     "}",
+    /*Minimum margin for game, replaced with auto-response function, keeping for reference
+    "@media screen and ( max-width: 616px ){",
+    ".body-tag-child{",
+        "margin-left: unset !important;",
+        "margin: 0 0 0 207 !important;",
+        "}",
+    "}",*/
     ".menu-expand-button {",
         "float:right;",
         "margin-top: -9%;",
@@ -334,8 +316,9 @@ var frameCSS = [
      //   "text-shadow: -1px 1px 20px white;",
    // "}",
     ".flash-notice {",
-        "border: 1px solid #ffd600;",
+        "border: 1px solid #ffd600 !important;",
         "text-shadow: -1px 1px 20px white;",
+        "transition: 0.5s;",
     "}",
     ".tooltip.bs-tooltip-bottom .tooltip-inner {",
          "background:#444 !important;",
@@ -397,12 +380,107 @@ var frameCSS = [
         "margin: unset;",
         "left: 0;",
         "bottom: 0;",
+    "}",
+    ".mining-tooltip {",
+        "width: 22rem;",
+        "background: #191919f0;",
+        "position: fixed;",
+        "top: 7rem;",
+        "color: white;",
+        "left: 14.75rem;",
+        "z-index: 99999;",
+        "height: 6rem;",
+        "float: left;",
+        "border: 1px solid grey;",
+        "border-radius: .33rem;",
+        "box-shadow: 6px 2px 19px 0px black;",
+        "font-size: .75rem;",
+        "padding-right: 0;",
+        "padding-left: 4px;",
+    "}",
+    "#miningToolTip {",
+        "margin: 0;",
+        "text-align: right;",
+    "}",
+    ".tooltip-th {",
+        "float: left;",
+        "padding-left: 0.5rem;",
+        "color: gold;",
+        "line-height: 1.5rem;",
+    "}",
+     ".tooltip-tbody {",
+        "box-shadow: none;",
+    "}",
+     ".tooltip-tr {",
+        "box-shadow: none;",
+    "}",
+    ".nav-button {",
+        "background: #1a1a1a;",
+        "border: 1px solid grey;",
+        "border-radius: 0.3rem;",
+        "margin-left: .15rem;",
+        "margin-right: .15rem;",
+        "height: 3rem;",
+        "cursor: pointer;",
+    "}",
+    ".nav-button:hover {",
+        "border-color: white;",
+    "}",
+    ".nav-img {",
+        "max-width: 2rem;",
+        "margin-left: -5px;",
+        "padding-top: 8px;",
+    "}",
+    ".nav-button-left {",
+        "border-right: 1px solid #00000058;",
+    "}",
+    ".nav-button-right {",
+        "font-family: 'Lucida Grande','bitstream vera sans','trebuchet ms','sans-serif','verdana';",
+        "color: gold;",
+        "font-size: 1.2rem;",
+        "float: left;",
+        "padding-left: 1rem;",
     "}"
-
    ].join('\n') + '\n';
 
 
-// Inject Scripts and Styles
+// FUNCTIONS
+function updateStats() {
+
+// Update Tooltip Variables
+    cOil = formatNumber(oil);
+    cStone = formatNumber(stone);
+    cCopper = formatNumber(copper);
+    cIron = formatNumber(iron);
+    cSilver = formatNumber(silver);
+    cGold = formatNumber(gold);
+
+
+// Notification System
+    // TODO: Created Mission Complete, Click For Reward notification
+skillsList.forEach(function(val,i) {
+ if(val.notif()){
+        $('#'+val.name+'-button').addClass('flash-notice');
+    } else {    $('#'+val.name+'-button').removeClass('flash-notice');}
+});
+
+// Update Counters
+    $('#counter-coin').text(formatNumber(coins));
+    $('#counter-bc').text(formatNumber(bloodCrystals));
+    $('#counter-energy').text(formatNumber(energy));
+
+};
+
+function loadMenu(item){
+    return "<div class='row nav-button' id='"+item.name+"-button' onclick="+item.navigation+">"
+        +"<div class='col-sm-3 nav-button-left'>"
+            +"<img src="+item.img+" class='nav-img'>"
+        +"</div>"
+        +"<div class='col-sm-9 nav-button-right'>" + item.label
+        +"</div>"
+    +"</div>}"}
+
+function injectHead(){
     $("head").append("<style>" + GM_getResourceText("bootstrapCSS") + "</style>");
     $("head").append("<style>" + GM_getResourceText("iconic") + "</style>");
     $("head").append("<style>" + GM_getResourceText("scrollbarOverlayCSS") + "</style>");
@@ -412,12 +490,9 @@ var frameCSS = [
     $("head").append("<style>" + frameCSS + "</style>");
     $("head").append("<script>" + GM_getResourceText("bootstrapBundle") + "</script>");
     $("head").append("<script>" + GM_getResourceText("scrollbarOverlayJS") + "</script>");
+};
 
-
-// Enable Tooltips
-$(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-})
+function displayInit(){
 /// Initialize Display
     $("body").prepend(
       "<div id='mainSideNav' class='sidenav container'>"
@@ -436,7 +511,7 @@ var menuBtnReplace = "#top-status-bar > table > tbody > tr > td:nth-child(3) > s
 $(menuBtnReplace).html('<i id="menu-button" class="fa fa-bars" aria-hidden="true" style="margin-right: 1rem;"></i>');
 
 
-var counters = "<div id='counterbar' class='row'>" +
+const counters = "<div id='counterbar' class='row'>" +
     "<span class='badge badge-dark counter-badge col-sm-2'>" +
         "<img class='counterIcon' src='https://diamondhunt.app/images/coins.png'><span id= 'counter-coin'>1</span></span>" +
     "<span class='badge badge-dark counter-badge col-sm-2'>" +
@@ -449,56 +524,129 @@ var counters = "<div id='counterbar' class='row'>" +
 
 ///// INSERT COUNTERS
  $('#mainSideNav').append(counters);
-///// INSERT SKILLS
-jQuery.each( skillArr, function( i, val ) {
-  $('#mainSideNav').append(fillSkills(val));
+//// INSERT SKILLS
+jQuery.each( skillsList, function( i, val ) {
+  $('#mainSideNav').append(loadMenu(val));
 });
-////// INSERT ADDITIONAL INFO
-$('#mainSideNav').append(statisticBar);
-$('#mainSideNav').append(researchBar);
-$('#mainSideNav').append(missionBar);
-$('#mainSideNav').append(questBar);
-$('#mainSideNav').append(homeBar);
-$('#mainSideNav').append(shopBar);
+};
 
-
-///////////////// SIDEBAR FUNCTIONS /////////////////
-$( "#nav-icon-container" ).click(function( event ) {
-    console.log("Nav Icon Container Clicked");
+function resizeScreen(){
   var target = $('#nav-icon');
   var minimized = target.attr('minimized');
   if ( minimized === "false" ) {
       $(target).attr('minimized', "true");
       $(target).removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
-      $('#mainSideNav').css( "width", "5%" );
+      $('.sidenav').css({"width": "15%","min-width":"3rem","max-width":"3rem"} );
       $('#body-tag-child').css("margin-left", "15%");
-      $('#main-title, .skillTitle, #counterbar').css("display","none");
-      $('').css("display","none");
+      $('#main-title, .skillTitle, #counterbar, .nav-button-right').css("display","none");
+      $('.nav-button').css("margin-left","-15px");
       $('.skillIcon').addClass('skillShrunk');
   };
   if (minimized === "true") {
       $(target).attr('minimized', "false");
       $(target).removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
-      $('#mainSideNav').css( "width", "25%" );
+      $('.sidenav').css({"width": "15%","min-width":"13rem","max-width":"16rem"} );
       $('#body-tag-child').css("margin-left", "35%");
-      $('#main-title').css("display","block");
+      $('#main-title, .nav-button-right').css("display","block");
       $('.skillTitle').css("display","inline");
       $('#counterbar').css('display','flow-root');
-
       $('.skillIcon').removeClass('skillShrunk');
   };
+};
+
+function responsiveResizing() {
+    let resizeTimeout;
+    $(window).resize(function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(doneResizing, 500);
+    });
+    let doneResizing = () => {
+        let isMinimized = $('#nav-icon').attr('minimized');
+        if ($(window).width() <= 615 && isMinimized === "false") {
+            resizeScreen();
+        }
+        if ($(window).width() >= 615 && isMinimized === "true") {
+            resizeScreen();
+        }
+    };
+}
+
+function ScrollbarOverlay() {
+    $('div#mainSideNav').overlayScrollbars({
+        overflowBehavior: {
+            x: "hidden",
+            y: "scroll"
+        },
+    });
+}
+
+function resizeButtonListener() {
+    $("#nav-icon-container").click(function (event) {
+        resizeScreen();
+    });
+}
+
+
+////// PROGRAM RUN ///////
+// Inject Scripts and Styles
+injectHead();
+// Initialize Display
+displayInit();
+// Watch for resizing
+responsiveResizing();
+// Insert Scrollbar Overlay
+ScrollbarOverlay();
+// Listen for resize button click
+resizeButtonListener();
+
+
+/////////////////////Tooltip//////////////////////////////////////////////////////
+var miningToolContainer = "<div class='container mining-tooltip' id='mining-tool-tip-container'>"
+    +    "<div class='row' id='miningToolTip'></div>"
+    +"</div>";
+$('#body-tag').append(miningToolContainer);
+$( "#miningbar" ).mouseover(function() {
+    var target = $('#miningToolTip');
+    $('#mining-tool-tip-container').css('display','block');
+target.html(
++'<table class="table table-sm table-dark tooltip-table">'
+  +'<thead class="tooltip-thead">'
+  +'</thead>'
+  +'<tbody class="tooltip-tbody">'
+    +'<tr class="tooltip-tr">'
+      +'<th class="tooltip-th" scope="row">Oil: </th>'
+      +'<td class="tooltip-td">'+cOil+'</td>'
+      +'<td class="tooltip-td">/ '+ formatNumber(oilCapacity)+'</td>'
+      +'<th class="tooltip-th" scope="row">Stone: </th>'
+      +'<td class="tooltip-td">'+cStone+'</td>'
+      +'<td class="tooltip-td">/ '+ formatNumber(stoneCapacity)+'</td>'
+    +'</tr>'
+    +'<tr class="tooltip-tr">'
+      +'<th class="tooltip-th" scope="row">Copper: </th>'
+      +'<td class="tooltip-td">'+cCopper+'</td>'
+      +'<td class="tooltip-td">/ '+ formatNumber(copperCapacity)+'</td>'
+      +'<th class="tooltip-th" scope="row">Iron: </th>'
+      +'<td class="tooltip-td">'+cIron+'</td>'
+      +'<td class="tooltip-td">/ '+ formatNumber(ironCapacity)+'</td>'
+    +'</tr>'
+    +'<tr class="tooltip-tr">'
+      +'<th class="tooltip-th" scope="row">Silver: </th>'
+      +'<td class="tooltip-td">'+cSilver+'</td>'
+      +'<td class="tooltip-td">/ '+ formatNumber(silverCapacity)+'</td>'
+      +'<th class="tooltip-th" scope="row">Gold: </th>'
+      +'<td class="tooltip-td">'+cGold+'</td>'
+      +'<td class="tooltip-td">/ '+ formatNumber(goldCapacity)+'</td>'
+    +'</tr>'
+     +'<tr class="tooltip-tr">'
+      +'<th class="tooltip-th" scope="row">Current XP: </th>'
+      +'<td class="tooltip-td" colspan="2">'+formatNumber(miningXp)+'</td>'
+      +'<th class="tooltip-th" scope="row">Remaining: </th>'
+      +'<td class="tooltip-td" colspan="2">'+formatNumber(getXpNeeded(getLevel(miningXp)+1) - miningXp)+'</td>'
+    +'</tr>'
+  +'</tbody>'
++'</table>');
+});
+$('#mining-tool-tip-container').css('display','none');
+$( "#miningbar" ).mouseout(function() {
 });
 
-//Tooltip//////////////////////////////////////////////////////
-$('#miningbar').attr('title','something else');
-
-// Initialize Scrollbar
-//$('#body-tag').overlayScrollbars({ className: "os-theme-dark"});
-$('div#mainSideNav').overlayScrollbars({
-
-    overflowBehavior :
-    {
-		x : "hidden",
-        y : "scroll"
-    },
-});
