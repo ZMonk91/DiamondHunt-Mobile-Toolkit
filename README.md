@@ -20,12 +20,11 @@
 * Adjustable side menu
 * Responsive game and menu screen
 * Notifications for Mining, Woodcutting, Crafting, Farming, and Research
-
+* New Statistics Screen
 
 ## Future Features
 * Display Remaining XP
 * Dynamic Tooltip Information
-* Statistics Screen
 * Calculators
 * Customizable Counter Bar
 * Custom Theme Support
@@ -36,6 +35,10 @@
 
 ## Known Bugs
 Please notify me if you find any
+
+## Contribution
+Feel free to create a fork request and then merge any changes you want to make. I would love to collaborate with you! 
+
 
 ### Special Thanks
  Thank you Agrodon for Testing, Bug Reporting, Remaining XP Guide, and Suggestions 
