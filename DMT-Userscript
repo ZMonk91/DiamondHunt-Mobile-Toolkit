@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dh Mobile Toolkit
 // @namespace    https://github.com/ZMonk91/DiamondHunt-Mobile-Toolkit
-// @version      0.40.1
+// @version      0.40.25
 // @description  Mobile Tools developed for DiamondHunt Mobile
 // @author       zspitfire04 && Agrodon
 // @match        https://diamondhunt.app/
@@ -123,17 +123,21 @@ const skillsList = [
     label: 'STATISTICS',
     notif:() => (false),
     }];
-
+const playerInfo = [{
+    username: ()=>(username),
+    online: ()=>(playersOnline),
+    totalTime: ()=>(Math.floor(playtime / 86400)+' days')
+}];
 
 // Styles
 const smittysFix = [
 ".smittys-dialogues{",
-    "width: 90%;",
-    "height: 90%",
+    "width: 90% !important;",
+    "height: 90%;",
     "position: fixed;",
     "top: 15%;",
     "left: 10%;",
-    "max-width: 40%;",
+    "max-width: 30rem;",
     "max-height: 100%;",
     "overflow: auto;",
     "background-color: #2e2f32eb;",
@@ -197,6 +201,7 @@ const frameCSS = [
     "}",
      "td span {",
         "text-shadow: 0px 0px 20px #000;",
+        "padding: 0.5rem;",
     "}",
     "tbody {",
         "box-shadow: inset 0 0 20px 1px #000;",
@@ -204,11 +209,23 @@ const frameCSS = [
     "div#game-screen {",
       "box-shadow: inset 0 0 20px 1px #000;",
     "}",
+    "div.main-button table td {",
+        "padding: inherit;",
+    "}",
+     "span.wrap-text{",
+        "white-space: pre-line;",
+    "}",
+    ".main-button-table-tr-td2 {",
+        "text-align: -webkit-right;",
+        "padding-right: 20px;",
+        "padding: 0;",
+        "float: right;",
+    "}",
+
     ".img-medium {",
         "padding-left: 1rem;",
         "vertical-align: middle;",
         "max-width: 6rem;",
-        "margin-right: -4rem;",
         "margin-left: -1rem;",
     "}",
     "div.div-fixed-top-bar {",
@@ -254,8 +271,12 @@ const frameCSS = [
         "min-width: 22rem;",
         "max-width: 35%;",
         "background-image: none;",
-        "background-color: #1111114a;",
+        "background-color: none;",
+        "border: none;",
         "transition: margin-left .5s;",
+    "}",
+    "td span {",
+        "font-size: 1.5rem;",
     "}",
     /*Minimum margin for game, replaced with auto-response function, keeping for reference
     "@media screen and ( max-width: 616px ){",
@@ -340,7 +361,11 @@ const frameCSS = [
      "}",
     ".counterIcon {",
         "max-width: 1rem;",
-        "margin-right: 4%",
+        "margin-right: 4%;",
+        "float: left;",
+    "}",
+    ".counterNumbers {",
+        "float: right;",
     "}",
     ".counter-badge {",
         "margin: 0 1% .5rem 6%;",
@@ -348,7 +373,11 @@ const frameCSS = [
         "min-width: 35%;",
         "box-shadow: inset 0 0px 6px 0px #000;",
         "border: 1px solid #f5f5f505;",
-       "text-shadow: 0 0 20px #000;",
+        "text-shadow: 0 0 20px #000;",
+        "margin-left: 3px;",
+        "padding-left: 2px;",
+        "max-height: 1.35rem;",
+        "max-width: 47%;",
     "}",
     ".os-theme-dark > .os-scrollbar > .os-scrollbar-track > .os-scrollbar-handle {",
         "background: #ffd700;",
@@ -384,6 +413,7 @@ const frameCSS = [
         "margin: unset;",
         "left: 0;",
         "bottom: 0;",
+        "z-index: 9999999999999999;",
     "}",
     ".mining-tooltip {",
         "width: 22rem;",
@@ -444,7 +474,47 @@ const frameCSS = [
         "font-size: 1.2rem;",
         "float: left;",
         "padding-left: 1rem;",
-    "}"
+    "}",
+    "#sidenav-title {",
+        "font-family: 'Lucida Grande','bitstream vera sans','trebuchet ms','sans-serif','verdana';",
+        "color: orange;",
+        "text-align: center;",
+        "font-weight: 600;",
+    "}",
+     "#sidenav-username {",
+        "color: white;",
+        "font-size: 0.8rem;",
+        "font-weight: 500;",
+        "margin: 1rem 0;",
+    "}",
+    "#sidenav-toggle {",
+        "background-color: #1a1a1a;",
+        "color: orange;",
+        "text-align: center;",
+        "border: 1px solid grey;",
+        "border-radius: .33rem;",
+        "font-size: 1.5rem;",
+        "width: 2.5rem;",
+        "padding: .5rem .5rem;",
+        "box-shadow: inset 0 0 8px 0px #000000;",
+        "text-shadow: 0 0 3px #000000;",
+    "}",
+    "#sidenav-playerstats {",
+        "color: white;",
+        "font-size: .75rem;",
+        "margin: -1rem 2px 1.33rem 15px;",
+        "height: 1.5rem;",
+        "width: 100%;",
+        "padding-right: 1rem;",
+    "}",
+    "#sidenav-stat-total {",
+        "float: left;",
+        "padding-right: 5rem;",
+    "}",
+    "#sidenav-stat-online {",
+        "float: right;",
+    "}",
+
    ].join('\n') + '\n';
 
 
@@ -472,6 +542,15 @@ skillsList.forEach(function(val,i) {
     $('#counter-coin').text(formatNumber(coins));
     $('#counter-bc').text(formatNumber(bloodCrystals));
     $('#counter-energy').text(formatNumber(energy));
+    $('#counter-oil').text(formatNumber(oil));
+
+// Update Player Info
+    $('#sidenav-username').text(playerInfo[0].username());
+    $('#sidenav-total-level-number').text(playerInfo[0].totalTime());
+    $('#sidenav-total-online-number').text(playerInfo[0].online());
+
+
+
 
 };
 
@@ -500,12 +579,12 @@ function displayInit(){
 /// Initialize Display
     $("body").prepend(
       "<div id='mainSideNav' class='sidenav container'>"
-    + "<div id = 'titlebar' class='row'>"
-    + "<span id='main-title' class='col-sm-10'><h6> DH Mobile Toolkit </h6></span>"
-    + "<div id='nav-icon-container' class='col-sm-2'>"
-    + "<a href='javascript:void(0)' class='closebtn'><span class='btn dh-btn'>"
-    + "<i id='nav-icon' class='fa fa-angle-double-left' minimized='false' aria-hidden='true'></i>"
-    + "</span></a>"
+    //+ "<div id = 'titlebar' class='row'>"
+    //+ "<span id='main-title' class='col-sm-10'><h6> DH Mobile Toolkit </h6></span>"
+   // + "<div id='nav-icon-container' class='col-sm-2'>"
+    //+ "<a href='javascript:void(0)' class='closebtn'><span class='btn dh-btn'>"
+   // + "<i id='nav-icon' class='fa fa-angle-double-left' minimized='false' aria-hidden='true'></i>"
+   // + "</span></a>"
     + "</div>"
      );
 $('#mainSideNav').css( "width", "25%" );
@@ -517,16 +596,34 @@ $(menuBtnReplace).html('<i id="menu-button" class="fa fa-bars" aria-hidden="true
 
 const counters = "<div id='counterbar' class='row'>" +
     "<span class='badge badge-dark counter-badge col-sm-2'>" +
-        "<img class='counterIcon' src='https://diamondhunt.app/images/coins.png'><span id= 'counter-coin'>1</span></span>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/coins.png'><span class='counterNumbers' id= 'counter-coin'>1</span></span>" +
     "<span class='badge badge-dark counter-badge col-sm-2'>" +
-        "<img class='counterIcon' src='https://diamondhunt.app/images/bloodCrystals.png'><span id= 'counter-bc'>231</span></span>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/bloodCrystals.png'><span class='counterNumbers' id= 'counter-bc'>231</span></span>" +
     "<span class='badge badge-dark counter-badge col-sm-2'>" +
-        "<img class='counterIcon' src='https://diamondhunt.app/images/energy.png'><span id= 'counter-energy'>124141</span></span>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/energy.png'><span class='counterNumbers' id= 'counter-energy'>124141</span></span>" +
     "<span class='badge badge-dark counter-badge col-sm-2'>" +
-        "<img class='counterIcon' src='https://diamondhunt.app/images/coins.png'><span id= 'counter-other'>35</span></span>" +
+        "<img class='counterIcon' src='https://diamondhunt.app/images/oil_lighter.png'><span class='counterNumbers' id= 'counter-oil'>35</span></span>" +
 "</div>"
 
+const sideNavHeader =
+  "<div id='sidenav-header' class='row'>"
+      + "<div id='sidenav-title' class='col-sm-12 toggle-hide'>"
+          + "DH Mobile Toolkit"
+      + "</div>"
+      + "<div id='sidenav-username' class='col-sm-10 toggle-hide'>"
+            + username
+      + "</div>"
+      + "<div id='sidenav-toggle' class='col-sm-2'>"
+          + "<i id='nav-icon' class='fa fa-angle-double-left' minimized='false' aria-hidden='true'></i>"
+      + "</div>"
+      + "<div id='sidenav-playerstats' class='row toggle-hide'>"
+          + "<div id='sidenav-stat-total' class='sidenav-stat'> Time Played: <span id='sidenav-total-level-number'>0</span></div>"
+          + "<div id='sidenav-stat-online' class='sidenav-stat'> Players Online: <span id='sidenav-total-online-number'>0</span></div>"
+      +"</div>"
++ "<div>"
+
 ///// INSERT COUNTERS
+ $('#mainSideNav').append(sideNavHeader);
  $('#mainSideNav').append(counters);
 //// INSERT SKILLS
 jQuery.each( skillsList, function( i, val ) {
@@ -540,19 +637,23 @@ function resizeScreen(){
   if ( minimized === "false" ) {
       $(target).attr('minimized', "true");
       $(target).removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
+      $('#sidenav-toggle').removeClass('col-sm-2').addClass('col-sm-8');
+      $('#sidenav-toggle').css("margin","1rem auto");
       $('.sidenav').css({"width": "15%","min-width":"3rem","max-width":"3rem"} );
       $('#body-tag-child').css("margin-left", "15%");
-      $('#main-title, .skillTitle, #counterbar, .nav-button-right').css("display","none");
+      $('.toggle-hide, #main-title, .skillTitle, #counterbar, .nav-button-right').css("display","none");
       $('.nav-button').css("margin-left","-15px");
       $('.skillIcon').addClass('skillShrunk');
   };
   if (minimized === "true") {
       $(target).attr('minimized', "false");
       $(target).removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
+      $('#sidenav-toggle').removeClass('col-sm-8').addClass('col-sm-2');
       $('.sidenav').css({"width": "15%","min-width":"13rem","max-width":"16rem"} );
       $('#body-tag-child').css("margin-left", "35%");
       $('#main-title, .nav-button-right').css("display","block");
       $('.skillTitle').css("display","inline");
+      $('.toggle-hide').css("display","inherit");
       $('#counterbar').css('display','flow-root');
       $('.skillIcon').removeClass('skillShrunk');
   };
@@ -585,7 +686,7 @@ function ScrollbarOverlay() {
 }
 
 function resizeButtonListener() {
-    $("#nav-icon-container").click(function (event) {
+    $("#sidenav-toggle").click(function (event) {
         resizeScreen();
     });
 }
