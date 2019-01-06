@@ -1,22 +1,23 @@
 // ==UserScript==
 // @name         Dh Mobile Toolkit
 // @namespace    https://github.com/ZMonk91/DiamondHunt-Mobile-Toolkit
-// @version      0.40.25
+// @version      0.43
 // @description  Mobile Tools developed for DiamondHunt Mobile
 // @author       zspitfire04 && Agrodon
 // @match        https://diamondhunt.app/
+// @updateURL   https://raw.githubusercontent.com/ZMonk91/DiamondHunt-Mobile-Toolkit/master/DMT-Userscript
+// @downloadURL https://raw.githubusercontent.com/ZMonk91/DiamondHunt-Mobile-Toolkit/master/DMT-Userscript
 // @resource    bootstrapBundle https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.bundle.min.js
 // @resource    bootstrapCSS https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css
 // @resource    scrollbarOverlayJS https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.6.1/js/jquery.overlayScrollbars.js
 // @resource    scrollbarOverlayCSS https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.6.1/css/OverlayScrollbars.min.css
-// @resource    fontAwesomeWoff https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff
 // @resource    fontAwesomeCSS https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // ==/UserScript==
 
 // VARIABLES
-let cOil,cStone,cCopper,cIron,cSilver,cGold;
+let cOil,cStone,cCopper,cIron,cSilver,cGold,overallXP,currentXpStats;
 const refreshRate = setInterval(updateStats, 1000);
 const skillsList = [
     {
@@ -111,14 +112,14 @@ const skillsList = [
     },
     {
     name: 'home',
-    navigation: '"navigate(\'home\');playFowardMenuSound()"',
+    navigation: '"navigate(\'home\');playFowardMenuSound();"',
     img: 'images/home1.png',
     label: 'HOUSE',
     notif:() => (false),
     },
     {
     name: 'statistics',
-    navigation: '#',
+    navigation: '"navigate(\'statistics\');playFowardMenuSound()"',
     img: 'images/globalLevel.png',
     label: 'STATISTICS',
     notif:() => (false),
@@ -128,6 +129,42 @@ const playerInfo = [{
     online: ()=>(playersOnline),
     totalTime: ()=>(Math.floor(playtime / 86400)+' days')
 }];
+const xpTableList = [{
+        skill: "brewing",
+        xp: () => (brewingXp),
+        percentage: () => (((brewingXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(brewingXp)),
+    },{
+        skill: "cooking",
+        xp: () => (cookingXp),
+        percentage: () => (((cookingXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(cookingXp)),
+    },{
+        skill: "crafting",
+        xp: () => (craftingXp),
+        percentage: () => (((craftingXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(craftingXp)),
+    },{
+        skill: "exploring",
+        xp: () => (exploringXp),
+        percentage: () => (((exploringXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(exploringXp)),
+    },{
+        skill: "farming",
+        xp: () => (farmingXp),
+        percentage: () => (((farmingXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(farmingXp)),
+    },{
+        skill: "mining",
+        xp: () => (miningXp),
+        percentage: () => (((miningXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(miningXp)),
+    },{
+        skill: "woodcutting",
+        xp: () => (woodcuttingXp),
+        percentage: () => (((woodcuttingXp * 100) / overallXP).toFixed(1)),
+        level: () => (getLevel(woodcuttingXp)),
+    }]
 
 // Styles
 const smittysFix = [
@@ -549,6 +586,7 @@ skillsList.forEach(function(val,i) {
     $('#sidenav-total-level-number').text(playerInfo[0].totalTime());
     $('#sidenav-total-online-number').text(playerInfo[0].online());
 
+ overallXP = (brewingXp + cookingXp + craftingXp + exploringXp + farmingXp + miningXp + woodcuttingXp);
 
 
 
@@ -568,7 +606,6 @@ function injectHead(){
     $("head").append("<style>" + GM_getResourceText("iconic") + "</style>");
     $("head").append("<style>" + GM_getResourceText("scrollbarOverlayCSS") + "</style>");
     $("head").append("<style>" + GM_getResourceText("fontAwesomeCSS") + "</style>");
-    $("head").append("<style>" + GM_getResourceText("fontAwesomeWoff") + "</style>");
     $("head").append("<style>" + smittysFix + "</style>");
     $("head").append("<style>" + frameCSS + "</style>");
     $("head").append("<script>" + GM_getResourceText("bootstrapBundle") + "</script>");
@@ -579,12 +616,6 @@ function displayInit(){
 /// Initialize Display
     $("body").prepend(
       "<div id='mainSideNav' class='sidenav container'>"
-    //+ "<div id = 'titlebar' class='row'>"
-    //+ "<span id='main-title' class='col-sm-10'><h6> DH Mobile Toolkit </h6></span>"
-   // + "<div id='nav-icon-container' class='col-sm-2'>"
-    //+ "<a href='javascript:void(0)' class='closebtn'><span class='btn dh-btn'>"
-   // + "<i id='nav-icon' class='fa fa-angle-double-left' minimized='false' aria-hidden='true'></i>"
-   // + "</span></a>"
     + "</div>"
      );
 $('#mainSideNav').css( "width", "25%" );
@@ -622,14 +653,40 @@ const sideNavHeader =
       +"</div>"
 + "<div>"
 
-///// INSERT COUNTERS
+// INSERT HEADER
  $('#mainSideNav').append(sideNavHeader);
+///// INSERT COUNTERS
  $('#mainSideNav').append(counters);
 //// INSERT SKILLS
 jQuery.each( skillsList, function( i, val ) {
   $('#mainSideNav').append(loadMenu(val));
 });
 };
+
+function loadStatsPage() {
+    const statsTemplate = '<div id="tab-statistics" style="display: none;">' +
+        '<div class="main-button-lighter">' +
+        ' <table>' +
+        ' <tbody>' +
+        '<tr onclick="navigate(\'main\');playPreviousMenuSound()" style="cursor: pointer;">' +
+        '<td><img src="images/back.png" class="img-small"></td>' +
+        ' <td class="back-label">BACK</td>' +
+        '</tr>' +
+        '</tbody>' +
+        '</table>' +
+        '</div>' +
+        '<div id="stats-table-1" class="stats-table">' +
+        "</div>" +
+        '</div>';
+    $('#game-screen > div').append(statsTemplate);
+}
+
+function hideExtraTabs(){
+$(".nav-button").click(function (event) {
+    if (this.id !== 'statistics-button'){
+        $("#tab-statistics").hide();}
+    });
+}
 
 function resizeScreen(){
   var target = $('#nav-icon');
@@ -691,18 +748,77 @@ function resizeButtonListener() {
     });
 }
 
+function createXPTable() {
+    currentXpStats = xpTableList.sort((a, b) => parseFloat(b.xp()) - parseFloat(a.xp()));
+    var builtTable;
+
+    function createTableBody() {
+        currentXpStats.forEach(function(val, i) {
+            builtTable = builtTable +
+                "<tr>" +
+                "<th scope='row'>" + String(i + 1) + "</th>" +
+                "<td>" + val.skill + "</td>" +
+                "<td>" + val.xp() + "</td>" +
+                "<td>" + String(val.percentage()) + "</td>" +
+                "<td>" + val.level() + "</td>" +
+                "</tr>"
+
+        })
+        return builtTable;
+    };
+
+    const xpTable =
+        "<table id='tablePreview' class='table table-dark table-striped table-hover table-sm table-borderless'>" +
+        "<thead>" +
+        "<tr>" +
+        "<th>#</th>" +
+        "<th>Skill</th>" +
+        "<th>XP Earned</th>" +
+        "<th>Percentage</th>" +
+        "<th>Level</th>" +
+        "</tr>" +
+        "</thead>" +
+        "<tr class='xp-row-overall'>" +
+        "<th scope='row'> * </th>" +
+        "<td> Overall </td>" +
+        "<td>" + overallXP + "</td>" +
+        "<td> 100% </td>" +
+        "<td>" + getGlobalLevel() + "</td>" +
+        "</tr>" +
+        createTableBody() +
+        "</tbody></table>"
+
+    return xpTable;
+}
+
+function clickToCreate(){
+$("#statistics-button").click(function (event) {
+        $('#stats-table-1').html(createXPTable);
+    });
+
+}
+
 
 ////// PROGRAM RUN ///////
+
 // Inject Scripts and Styles
 injectHead();
 // Initialize Display
 displayInit();
+// Create a Statistics Page
+loadStatsPage();
 // Watch for resizing
 responsiveResizing();
 // Insert Scrollbar Overlay
 ScrollbarOverlay();
 // Listen for resize button click
 resizeButtonListener();
+// Hides newly created tabs
+hideExtraTabs();
+// Refreshes statistics table on load
+clickToCreate();
+
+
 
 
 /////////////////////Tooltip//////////////////////////////////////////////////////
