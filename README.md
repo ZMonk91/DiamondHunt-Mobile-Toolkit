@@ -35,7 +35,7 @@
 * Wiki
 
 ## Known Bugs
-* Fourth counter is useless for now
+Please notify me if you find any
 
 ### Special Thanks
  Thank you Agrodon for Testing, Bug Reporting, Remaining XP Guide, and Suggestions 
